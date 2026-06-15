@@ -50,7 +50,7 @@ const config = {
   NEWSLETTER_JID: '1201234567890@newsletter',
   OTP_EXPIRY: 300000,
   OWNER_NUMBER: process.env.OWNER_NUMBER || '94770051298',
-  CHANNEL_LINK: 'https://whatsapp.com/channel/xxxxxxxxxxxxxxxxxx',
+  CHANNEL_LINK: 'https://whatsapp.com/channel/0029VbBQ68q1t90Vnb5EWt2l',
   BOT_NAME: 'IK PREMIUM MOVIE BOT',
   BOT_VERSION: '1.0.0V',
   OWNER_NAME: 'Kavindu X Ishan',
@@ -766,6 +766,107 @@ function setupCommandHandlers(socket, number) {
           }
           break;
         }
+
+
+case "movie": {
+  const movies = [
+    {
+      id: 1,
+      name: "*Father (2026)*",
+      desc: "Father\n\nA touching story about a devoted father who sacrifices everything for the happiness and future of his children.\nThrough struggles, love, and determination, he faces life's challenges to protect and support his family.\nA heartfelt drama that celebrates the true meaning of fatherhood.",
+      image: "https://files.soonex.biz.id/adbfb38dd57e.jpg",
+      links: {
+        "720": "https://abiifile2link-9ea208ceb4e3.herokuapp.com/121720/Father+2026+720p+HD+%40sinhalaaaa.mkv?hash=AgADyB",
+        "1080": "https://abiifile2link-9ea208ceb4e3.herokuapp.com/121724/Father+2026+%40sinhalaaaa.mkv?hash=AgAD3i"
+      }
+    },
+    {
+      id: 2,
+      name: "Mariya (2026)",
+      desc: "🎬 Mariya (2025)\n\nMariya is an emotional drama movie that follows the journey of a young woman facing life's biggest challenges. With powerful performances, heartfelt moments, and an inspiring story of courage and determination, Mariya delivers an unforgettable cinematic experience.\n\n📅 Release Year: 2026\n🎭 Genre: Drama\n⭐ Language: Sinhala",
+      image: "https://files.soonex.biz.id/af80f69f9f91.jpg",
+      links: {
+        "720": "https://abiifile2link-9ea208ceb4e3.herokuapp.com/121726/Maariya+%282025%29+-+Sinhala+-+HDTV+-+x264+%40sinhalaaaa.mkv?hash=AgADfx",
+        "1080": "https://abiifile2link-9ea208ceb4e3.herokuapp.com/121726/Maariya+%282025%29+-+Sinhala+-+HDTV+-+x264+%40sinhalaaaa.mkv?hash=AgADfx"
+      }
+    }
+  ];
+
+  global.movieDB = movies;
+  global.movieStep = global.movieStep || {};
+
+  let text = "🎬 *IK Premium Movies*\n\n";
+
+  movies.forEach(m => {
+    text += `${m.id}. ${m.name}\n`;
+  });
+
+  text += "\n📌 Reply with number (1 or 2)";
+
+  global.movieStep[from] = "select";
+
+  await conn.sendMessage(from, { text }, { quoted: msg });
+}
+break;
+
+
+// =====================
+// NUMBER SELECT (SAFE)
+// =====================
+if (global.movieStep?.[from] === "select") {
+
+  const movies = global.movieDB || [];
+  const movie = movies.find(m => m.id == body);
+
+  if (!movie) {
+    return conn.sendMessage(from, {
+      text: "❌ Invalid number!"
+    }, { quoted: msg });
+  }
+
+  global.movieStep[from] = {
+    step: "quality",
+    movie: movie
+  };
+
+  return conn.sendMessage(from, {
+    image: { url: movie.image },
+    caption:
+      `🎬 *${movie.name}*\n\n` +
+      `📝 ${movie.desc}\n\n` +
+      `📥 Choose Quality:\n` +
+      `Reply: 720 or 1080`
+  }, { quoted: msg });
+}
+
+
+// =====================
+// QUALITY SELECT (SAFE)
+// =====================
+if (global.movieStep?.[from]?.step === "quality") {
+
+  const movie = global.movieStep[from].movie;
+
+  let quality = null;
+
+  if (body === "720") quality = "720";
+  if (body === "1080") quality = "1080";
+
+  if (!quality) {
+    return conn.sendMessage(from, {
+      text: "❌ Reply only 720 or 1080"
+    }, { quoted: msg });
+  }
+
+  delete global.movieStep[from];
+
+  return conn.sendMessage(from, {
+    text:
+      `🎬 *${movie.name}*\n` +
+      `📦 Quality: ${quality}p\n\n` +
+      `🔗 Download:\n${movie.links[quality]}`
+  }, { quoted: msg });
+}
 
 
         case 'ping': {
